@@ -1,0 +1,8 @@
+{% if images %}
+    {% for image in images %}
+        <h3>{{ image.caption }}</h3>
+        <img src="{{ image.url }} ">
+    {% endfor %}
+{% else %}
+    <p>No photos are available.</p>
+{% endif %}
