@@ -8,6 +8,7 @@ export default class Dashboard extends Component {
 
         this.state = {
             isAuth: false,
+            username: "",
         };
     }
 
@@ -34,11 +35,37 @@ export default class Dashboard extends Component {
         this.checkAuth();
     }
 
+    fetchUsername = () => {
+        const token = localStorage.getItem('token');
+        /*
+        const token = JSON.parse(localStorage.getItem('token'));
+        //console.log(token);
+        const api = '/api/account/view_username/'
+        axios.get(api, { headers: {"Authorization" : `Bearer ${token}`} })
+                .then(res => {
+                    console.log(res.data);
+            });
+        */
+       const api = '/api/account/view_username/'
+       axios.get(api, { headers: {"Authorization" : `Bearer ${token}`} })
+               .then(res => {
+                    this.setState({ username: res.data.username });
+           });
+    }
+
+    componentDidUpdate(prevState) {
+        if (this.state.isAuth != prevState.isAuth) {
+            if (this.state.username == "")
+                this.fetchUsername();
+        }
+    }
+
     render() {
         const status = this.state.isAuth ? "You are logged in" : "Not logged in";
         return(
             <div>
                 <h1>Welcome to Dashboard</h1>
+                <p>Welcome back, {this.state.username}</p>
                 <p>{status}</p>
                 <h2 onClick={this.handleLogout}>Logout</h2>
             </div>
