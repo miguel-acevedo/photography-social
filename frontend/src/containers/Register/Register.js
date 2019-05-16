@@ -1,20 +1,21 @@
 import React, { Component } from "react";
 import { Button, FormGroup, FormControl, FormLabel } from "react-bootstrap";
-import "./Login.css";
+import "../Login/Login.css";
 import axios from "axios";
 
-export default class Login extends Component {
+export default class Register extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
       username: "",
-      password: ""
+      password: "",
+      email: "",
     };
   }
 
   validateForm() {
-    return this.state.username.length > 0 && this.state.password.length > 0;
+    return this.state.username.length > 0 && this.state.password.length > 0 && this.state.email.length > 0;
   }
 
   handleChange = event => {
@@ -53,7 +54,7 @@ export default class Login extends Component {
   render() {
     return (
       <div className="Login">
-        <h1>Login</h1>
+        <h1>Register</h1>
         <form onSubmit={this.handleSubmit}>
           <FormGroup controlId="username" bssize="large">
             <FormLabel>Username</FormLabel>
@@ -61,6 +62,14 @@ export default class Login extends Component {
               autoFocus
               type="text"
               value={this.state.username}
+              onChange={this.handleChange}
+            />
+          </FormGroup>
+          <FormGroup controlId="email" bssize="large">
+            <FormLabel>Email</FormLabel>
+            <FormControl
+              type="email"
+              value={this.state.email}
               onChange={this.handleChange}
             />
           </FormGroup>
@@ -78,12 +87,11 @@ export default class Login extends Component {
             disabled={!this.validateForm()}
             type="submit"
           >
-            Login
+            Register
           </Button>
-          <br>
-          </br>
-          <p>Don't have an account?</p>
-          <Button id="register" block onClick={() => this.props.handler("register")}>Register</Button>
+          <br></br>
+          <p>Already have an account?</p>
+          <Button block onClick={() => this.props.handler("login")}>Login</Button>
         </form>
       </div>
     );
