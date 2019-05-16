@@ -1,1 +1,1 @@
-This is a basic app for me to get used to django.
+Django REST Framework being used to serve the api endpoints.
