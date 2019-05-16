@@ -5,6 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css';
 import App from './App';
 import Login from './containers/Login/Login';
+import Dashboard from './containers/Dashboard/Dashboard'
 import * as serviceWorker from './serviceWorker';
 
 // Takes care of the url routing.
@@ -13,6 +14,7 @@ const routing = (
         <div>
             <Route exact path="/" component={App} />
             <Route path="/login" component={Login} />
+            <Route path="/dashboard" component={Dashboard} />
         </div>
     </Router>
 )
