@@ -2,6 +2,7 @@
 # https://medium.com/backticks-tildes/lets-build-an-api-with-django-rest-framework-part-2-cfb87e2c8a6c
 # https://medium.com/profil-software-blog/10-things-you-need-to-know-to-effectively-use-django-rest-framework-7db7728910e0
 # https://scotch.io/tutorials/build-a-to-do-application-using-django-and-react
+# https://medium.com/@bluepnume/functional-ish-javascript-205c05d0ed08?fbclid=IwAR3FDVwVszGvtAFa8NLcQWI0o0IiP32pb0jkrrCDYShFeVvmwsaXjDnbUTY
 """
 Django settings for photomate project.
 

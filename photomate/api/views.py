@@ -98,6 +98,7 @@ class Auth(viewsets.ViewSet):
         new_user = User.objects.create_user(
             username=username, password=password, email=email
         )
+        
         return Response(status=status.HTTP_201_CREATED)
 
 class PortfolioView(viewsets.ModelViewSet):
