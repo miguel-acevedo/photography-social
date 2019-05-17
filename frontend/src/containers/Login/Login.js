@@ -37,10 +37,7 @@ export default class Login extends Component {
     .then(res => {
       console.log(res.data);
       this.saveToken(res.data.token);
-
-      this.props.history.push({
-        pathname: '/dashboard',
-      })
+      this.props.redirect("/dashboard");
     }, error => {
       if (error.response.status === 401) {
         console.log("Wrong login, please try again.");

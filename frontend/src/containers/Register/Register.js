@@ -30,22 +30,17 @@ export default class Register extends Component {
 
   handleSubmit = event => {
     event.preventDefault();
+    console.log("Trying to register");
 
-    axios.post("/api/auth/login/", {
+    axios.post("/api/auth/register/", {
       'username': this.state.username,
       'password': this.state.password,
+      'email': this.state.username,
     })
     .then(res => {
-      console.log(res.data);
-      this.saveToken(res.data.token);
-
-      this.props.history.push({
-        pathname: '/dashboard',
-      })
+        console.log(res);
+        this.props.handler("login");
     }, error => {
-      if (error.response.status === 401) {
-        console.log("Wrong login, please try again.");
-      }
       console.log(error);
     });
 

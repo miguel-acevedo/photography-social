@@ -12,45 +12,19 @@ from rest_framework.status import (
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions, generics, status
 from rest_framework.decorators import action, detail_route
-from portfolio.models import Portfolio
+from portfolio.models import Portfolio, Image
 from portfolio.serializers import PortfolioSerializer
 from rest_framework_jwt.settings import api_settings
 from django.contrib.auth.models import User
 from .serializers import TokenSerializer
+from django import core
+from django.http import JsonResponse
 
 # Get the JWT settings, add these lines after the import/from lines
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 
 from rest_framework import serializers
-
-class LoginView(generics.CreateAPIView):
-    """
-    POST auth/login/
-    """
-    # This permission class will overide the global permission
-    # class setting
-    permission_classes = (permissions.AllowAny,)
-    queryset = User.objects.all()
-    # The tutorial did not include having to define the serializer_class here.
-    serializer_class = TokenSerializer
-
-    def post(self, request, *args, **kwargs):
-        username = request.data.get("username", "")
-        password = request.data.get("password", "")
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            # login saves the user’s ID in the session,
-            # using Django’s session framework.
-            login(request, user)
-            serializer_class = TokenSerializer(data={
-                # using drf jwt utility functions to generate a token
-                "token": jwt_encode_handler(
-                    jwt_payload_handler(user)
-                )})
-            serializer_class.is_valid()
-            return Response(serializer_class.data)
-        return Response(status=HTTP_401_UNAUTHORIZED)
 
 class Auth(viewsets.ViewSet):
     IsAuth = (permissions.IsAuthenticated,)
@@ -105,26 +79,19 @@ class PortfolioView(viewsets.ModelViewSet):
     serializer_class = PortfolioSerializer
     queryset = Portfolio.objects.all()
 
-    # Login route allowing new users to login.
-    @action(methods=['post'], detail=False, permission_classes=(permissions.IsAuthenticated,))
-    def logout(self, request):
-        '''
-        /api/auth/logout/
-        '''
-        request.user.auth_token.delete()
-        return Response( status=HTTP_200_OK )
-        '''
-        username = request.data.get("username", "")
-        password = request.data.get("password", "")
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            # login saves the user’s ID in the session,
-            # using Django’s session framework.
-            logout(request, user)
-            return Response(status=HTTP_200_OK)
-        return Response(status=HTTP_401_UNAUTHORIZED)
-        '''
+    # permission_classes=(permissions.IsAuthenticated,)
+    @action(methods=['get'], detail=False, permission_classes=(permissions.IsAuthenticated,))
+    def fetch_portfolios(self, request):
+        serializer_class = PortfolioSerializer
+        queryset = Portfolio.objects.filter(author__username=request.user.username).values()
 
+        for item in queryset:
+            images = Image.objects.filter(portfolio__id=item['id']).values()
+            if images is not None:
+                item['images'] = images
+
+        return Response({'data': queryset } , status=HTTP_200_OK, )
+        #return JsonResponse({"models_to_return": list(queryset)})
 
 class RegisterUsersView(generics.CreateAPIView):
     """

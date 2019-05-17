@@ -19,8 +19,15 @@ export default class Auth extends Component {
         console.log(form);
     }
 
+    handleRedirect = (url) => {
+        this.props.history.push({
+            pathname: url,
+          })
+    }
+
     render() {
-        const authMethod = (this.state.type === "login") ? <Login handler = {this.handler} /> : <Register handler = {this.handler} />;
+        const authMethod = (this.state.type === "login") ? 
+        <Login handler = {this.handler} redirect={this.handleRedirect} /> : <Register handler = {this.handler} redirect={this.handleRedirect} />;
         return (
             authMethod
         );

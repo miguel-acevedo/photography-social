@@ -21,7 +21,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from account import views as account_views
-from api.views import Account, LoginView, RegisterUsersView, Auth, PortfolioView
+from api.views import Account, RegisterUsersView, Auth, PortfolioView
 from django.views.generic.base import TemplateView
 
 router = DefaultRouter()
@@ -34,10 +34,6 @@ router.register('portfolio', PortfolioView, base_name='portfolio')
 urlpatterns = [
     #path('view/', include('portfolio.urls')),
     path('api/', include(router.urls)),
-    #path('auth/login/', LoginView.as_view(), name="auth-login"),
-    #path('auth/register/', RegisterUsersView.as_view(), name="auth-register"),
-    #path('api/login', api_views.login),
-    #path('api/sampleapi', api_views.sample_api),
     path('admin/', admin.site.urls),
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
     path('accounts/', include('django.contrib.auth.urls')),

@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { browserHistory } from 'react-router';
 import axios from "axios";
 
 export default class Dashboard extends Component {
@@ -12,22 +11,22 @@ export default class Dashboard extends Component {
         };
     }
 
-    redirectLogin = () => {
+    redirect = (url) => {
         this.props.history.push({
-            pathname: '/login',
+            pathname: url,
           })
     }
 
     handleLogout = () => {
         localStorage.clear();
-        this.redirectLogin();
+        this.redirect("/login");
     }
 
     checkAuth = () => {
         if (localStorage.getItem('token') != undefined) {
             this.setState({ isAuth: true });
         } else {
-            this.redirectLogin();
+            this.redirect("/login");
         }
     }
 
@@ -50,6 +49,10 @@ export default class Dashboard extends Component {
        axios.get(api, { headers: {"Authorization" : `Bearer ${token}`} })
                .then(res => {
                     this.setState({ username: res.data.username });
+           }, error => {
+               if (error.response.status === 401) {
+                    this.redirect("/login");
+               }
            });
     }
 
