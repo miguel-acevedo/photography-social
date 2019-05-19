@@ -19,6 +19,7 @@ from django.contrib.auth.models import User
 from .serializers import TokenSerializer
 from django import core
 from django.http import JsonResponse
+from django.utils import timezone
 
 # Get the JWT settings, add these lines after the import/from lines
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
@@ -56,9 +57,7 @@ class Auth(viewsets.ViewSet):
     # Register route allowing new users to register
     @action(methods=['post'], detail=False)
     def register(self, request):
-        '''
-        /api/auth/register/
-        '''
+        # /api/auth/register/
         username = request.data.get("username", "")
         password = request.data.get("password", "")
         email = request.data.get("email", "")
@@ -75,23 +74,69 @@ class Auth(viewsets.ViewSet):
         
         return Response(status=status.HTTP_201_CREATED)
 
-class PortfolioView(viewsets.ModelViewSet):
+class PortfolioView(viewsets.ViewSet):
+    """ Portfolio resource. """
     serializer_class = PortfolioSerializer
     queryset = Portfolio.objects.all()
 
-    # permission_classes=(permissions.IsAuthenticated,)
-    @action(methods=['get'], detail=False, permission_classes=(permissions.IsAuthenticated,))
+    def list(self, request):
+        return Response({"Detail": "Hello"}, status=HTTP_200_OK)
+
+    permission_classes=(permissions.IsAuthenticated,)
+    #permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    #isAuth = (permissions.IsAuthenticated,)
+
+    @action(methods=['get'], detail=False)
     def fetch_portfolios(self, request):
-        serializer_class = PortfolioSerializer
+        """
+        get:
+        User recieves portfolio
+        """
         queryset = Portfolio.objects.filter(author__username=request.user.username).values()
 
         for item in queryset:
             images = Image.objects.filter(portfolio__id=item['id']).values()
-            if images is not None:
-                item['images'] = images
+            item['images'] = images
 
         return Response({'data': queryset } , status=HTTP_200_OK, )
-        #return JsonResponse({"models_to_return": list(queryset)})
+    
+    @action(methods=['post'], detail=False)
+    def create_portfolio(self, request):
+        """
+        post:
+        User creates portfolio
+        """
+        title = request.data.get("title")
+        about = request.data.get("about")
+        images = request.data.get("images")
+        if title is not None and about is not None:
+            new = Portfolio(title=title, about=about, pub_date=timezone.now(), author=request.user)
+            new.save()
+            if images:
+                for i, image in enumerate(images):
+                    isVisible = image.get('visible', True)
+                    new_image = Image(portfolio=new, url=image['url'], caption=image['caption'], order=i, visible=isVisible)
+                    new_image.save()
+            return Response(status=HTTP_200_OK)
+        else:
+            return Response(status=HTTP_400_BAD_REQUEST)
+
+    # Insert image into portfolio.
+    @action(methods=['post'], detail=False)
+    def insert_image(self, request):
+        # Takes in a dict of images: 
+        # INPUT    'images': []   portfolio_id: INT
+        images = request.data.get("images")
+        portfolio_id = request.data.get("portfolio_id")
+        # Check if there exists a portfolio with the id request and that belongs to the owner.
+        port_image_count = Image.objects.filter(portfolio__id=portfolio_id).count()
+        if images and portfolio_id is not None and port_image_count is not None:
+            for i, image in enumerate(images):
+                new_image = Image(portfolio=Portfolio.objects.filter(author=request.user, pk=portfolio_id).first(), url=image['url'], caption=image['caption'], order= i + port_image_count)
+                new_image.save()
+            return Response(status=HTTP_200_OK)
+        else:
+            return Response(status=HTTP_400_BAD_REQUEST)
 
 class RegisterUsersView(generics.CreateAPIView):
     """

@@ -23,6 +23,9 @@ from rest_framework.routers import DefaultRouter
 from account import views as account_views
 from api.views import Account, RegisterUsersView, Auth, PortfolioView
 from django.views.generic.base import TemplateView
+from rest_framework_swagger.views import get_swagger_view
+
+schema_view = get_swagger_view(title='Photomate API')
 
 router = DefaultRouter()
 router.register('account', Account, base_name='account')
@@ -33,6 +36,7 @@ router.register('portfolio', PortfolioView, base_name='portfolio')
 
 urlpatterns = [
     #path('view/', include('portfolio.urls')),
+    url(r'^swagger/$', schema_view),
     path('api/', include(router.urls)),
     path('admin/', admin.site.urls),
     path('', TemplateView.as_view(template_name='home.html'), name='home'),

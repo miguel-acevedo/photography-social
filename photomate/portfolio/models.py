@@ -5,12 +5,14 @@ from django.contrib.auth.models import User
 
 
 class Portfolio(models.Model):
-    intro_text = models.CharField(max_length=300)
+    title = models.CharField(max_length=50)
+    about = models.CharField(max_length=300, default="")
     pub_date = models.DateTimeField('date published')
     author = models.ForeignKey(User, on_delete=models.CASCADE, default='0000000')
+    visible = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.intro_text
+        return self.title
 
 
 class Image(models.Model):
@@ -18,6 +20,7 @@ class Image(models.Model):
     url = models.CharField(max_length=300, default='')
     caption = models.CharField(max_length=100)
     order = models.IntegerField(default=0)
+    visible = models.BooleanField(default=True)
 
     def __str__(self):
         return self.caption
