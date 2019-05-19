@@ -9,6 +9,7 @@ from rest_framework.status import (
     HTTP_404_NOT_FOUND,
     HTTP_200_OK
 )
+from rest_framework.filters import BaseFilterBackend
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions, generics, status
 from rest_framework.decorators import action, detail_route
@@ -20,12 +21,23 @@ from .serializers import TokenSerializer
 from django import core
 from django.http import JsonResponse
 from django.utils import timezone
+import coreapi
 
+from django_filters.rest_framework import DjangoFilterBackend
 # Get the JWT settings, add these lines after the import/from lines
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 
 from rest_framework import serializers
+
+class SimpleFilterBackend(BaseFilterBackend):
+    def get_schema_fields(self, view):
+        return [coreapi.Field(
+            name='token',
+            location='login',
+            required=False,
+            type='string'
+        )]
 
 class Auth(viewsets.ViewSet):
     IsAuth = (permissions.IsAuthenticated,)
@@ -38,6 +50,9 @@ class Auth(viewsets.ViewSet):
     # Login route allowing new users to login.
     @action(methods=['post'], detail=False)
     def login(self, request):
+        """
+        name: Testing
+        """
         username = request.data.get("username", "")
         password = request.data.get("password", "")
         user = authenticate(request, username=username, password=password)
@@ -90,7 +105,8 @@ class PortfolioView(viewsets.ViewSet):
     def fetch_portfolios(self, request):
         """
         get:
-        User recieves portfolio
+            User recieves portfolio
+            INPUT: No input
         """
         queryset = Portfolio.objects.filter(author__username=request.user.username).values()
 
@@ -121,9 +137,33 @@ class PortfolioView(viewsets.ViewSet):
         else:
             return Response(status=HTTP_400_BAD_REQUEST)
 
+    @action(methods=['post'], detail=False)
+    def delete_portfolio(self, request):
+        """
+        post:
+        User deletes portfolio
+        """
+        portfolio_id = request.data.get("portfolio_id")
+        if portfolio_id is not None:
+            Portfolio.objects.filter(author=request.user, pk=portfolio_id).delete()
+            return Response(status=HTTP_200_OK)
+        else:
+            return Response(status=HTTP_400_BAD_REQUEST)
+
+    @action(methods=['post'], detail=False)
+    def delete_image(self, request):
+        image_id = request.data.get("image_id")
+        if image_id is not None:
+            img = Image.objects.filter(pk=image_id).first()
+            if img.portfolio.author == request.user:
+                img.delete()
+            return Response(status=HTTP_200_OK)
+        else:
+            return Response(status=HTTP_400_BAD_REQUEST)
+
     # Insert image into portfolio.
     @action(methods=['post'], detail=False)
-    def insert_image(self, request):
+    def create_image(self, request):
         # Takes in a dict of images: 
         # INPUT    'images': []   portfolio_id: INT
         images = request.data.get("images")
@@ -163,6 +203,7 @@ class RegisterUsersView(generics.CreateAPIView):
 
 class Account(viewsets.ViewSet):
     #permission_classes = (permissions.IsAuthenticated,)
+
     IsAuth = (permissions.IsAuthenticated,)
     def list(self, request):
         return Response({'token': 'Hello There'}, status=HTTP_200_OK)

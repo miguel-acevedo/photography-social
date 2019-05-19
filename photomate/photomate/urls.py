@@ -25,6 +25,7 @@ from api.views import Account, RegisterUsersView, Auth, PortfolioView
 from django.views.generic.base import TemplateView
 from rest_framework_swagger.views import get_swagger_view
 
+from .swagger_schema import SwaggerSchemaView
 schema_view = get_swagger_view(title='Photomate API')
 
 router = DefaultRouter()
