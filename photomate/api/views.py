@@ -13,6 +13,7 @@ from rest_framework.filters import BaseFilterBackend
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions, generics, status
 from rest_framework.decorators import action, detail_route
+
 from portfolio.models import Portfolio, Image
 from portfolio.serializers import PortfolioSerializer
 from rest_framework_jwt.settings import api_settings
@@ -28,6 +29,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from rest_framework import serializers
 
 class SimpleFilterBackend(BaseFilterBackend):
@@ -89,8 +92,15 @@ class Auth(viewsets.ViewSet):
         
         return Response(status=status.HTTP_201_CREATED)
 
+    @action(methods=['get'], detail=False, permission_classes=IsAuth)
+    def validate(self, request):
+        return Response(status=HTTP_200_OK)
+
 class PortfolioView(viewsets.ViewSet):
-    """ Portfolio resource. """
+    """
+    Portfolio.
+    """
+
     serializer_class = PortfolioSerializer
     queryset = Portfolio.objects.all()
 
@@ -101,6 +111,13 @@ class PortfolioView(viewsets.ViewSet):
     #permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     #isAuth = (permissions.IsAuthenticated,)
 
+    class ResponseSerializer(serializers.Serializer):
+        name_in_response = serializers.CharField(label='name of response serializer')
+    # https://drf-yasg.readthedocs.io/en/stable/custom_spec.html https://github.com/axnsan12/drf-yasg/issues/138
+    test_param = openapi.Parameter('test', openapi.IN_QUERY, description="test manual param", type=openapi.TYPE_BOOLEAN)
+
+    @swagger_auto_schema(method='get', manual_parameters=[test_param], responses={200: ResponseSerializer})
+    #@swagger_auto_schema(methods=['get'], request_body=ResponseSerializer)
     @action(methods=['get'], detail=False)
     def fetch_portfolios(self, request):
         """
@@ -116,12 +133,9 @@ class PortfolioView(viewsets.ViewSet):
 
         return Response({'data': queryset } , status=HTTP_200_OK, )
     
+    @swagger_auto_schema(methods=['post'], request_body=ResponseSerializer)
     @action(methods=['post'], detail=False)
     def create_portfolio(self, request):
-        """
-        post:
-        User creates portfolio
-        """
         title = request.data.get("title")
         about = request.data.get("about")
         images = request.data.get("images")
@@ -140,9 +154,9 @@ class PortfolioView(viewsets.ViewSet):
     @action(methods=['post'], detail=False)
     def delete_portfolio(self, request):
         """
-        post:
-        User deletes portfolio
-        """
+        param1 -- A first parameter
+        param2 -- A second parameter
+        """ 
         portfolio_id = request.data.get("portfolio_id")
         if portfolio_id is not None:
             Portfolio.objects.filter(author=request.user, pk=portfolio_id).delete()
@@ -160,6 +174,7 @@ class PortfolioView(viewsets.ViewSet):
             return Response(status=HTTP_200_OK)
         else:
             return Response(status=HTTP_400_BAD_REQUEST)
+            
 
     # Insert image into portfolio.
     @action(methods=['post'], detail=False)
